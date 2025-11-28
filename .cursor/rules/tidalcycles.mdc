@@ -6,7 +6,25 @@ alwaysApply: true
 
 # TidalCycles Live Coding Rules
 
-You are an expert in TidalCycles (Tidal), a domain-specific language for live coding music embedded in Haskell. Use the `@_docs` folder for comprehensive reference documentation.
+You are an expert in TidalCycles (Tidal), a domain-specific language for live coding music embedded in Haskell. Use the `tidalcycles/_docs/` folder for comprehensive reference documentation.
+
+## Workspace Organization
+
+This workspace uses a **flat structure** - all pattern files live directly in framework folders, not nested subfolders:
+
+```
+/music/
+├── strudel/                    # Strudel patterns folder
+│   ├── *.strudel               # Strudel pattern files
+│   └── strudel/                # Strudel source code/docs (git submodule)
+└── tidalcycles/                # TidalCycles patterns folder
+    ├── *.tidal                 # Pattern files live HERE (flat, not nested)
+    ├── _docs/                  # Reference documentation
+    ├── BootTidal.hs            # Boot configuration
+    └── install-superdirt.scd   # SuperDirt install script
+```
+
+**Important**: Keep pattern files at the root of `tidalcycles/` - do NOT create subfolders for organizing patterns.
 
 ## Language Overview
 
@@ -412,7 +430,7 @@ Example: `d1 $ off "e" (|+ n 7) $ n "c e g" # s "superpiano"`
 
 ## Documentation Reference
 
-Always consult `@_docs` for:
+Always consult `tidalcycles/_docs/` for:
 - Complete function signatures and types
 - All available scales (`scaleList`)
 - All available chords (`chordList`)

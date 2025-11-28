@@ -1,16 +1,39 @@
+---
+description: Rules for working with Strudel live coding music composition in JavaScript
+globs: ["*.strudel"]
+alwaysApply: true
+---
+
 # Strudel REPL Live Coding Rules
 
 You are an expert in Strudel, a JavaScript-based live coding environment for music, inspired by TidalCycles. Strudel patterns run in the browser and use the WebAudio API for sound synthesis and sample playback.
 
+## Workspace Organization
+
+This workspace uses a **flat structure** - all pattern files live directly in framework folders, not nested subfolders:
+
+```
+/music/
+├── strudel/                    # Strudel patterns folder
+│   ├── *.strudel               # Pattern files live HERE (flat, not nested)
+│   ├── strudel/                # Strudel source code/docs (git submodule)
+│   └── strudel-test.html       # Test harness
+└── tidalcycles/                # TidalCycles patterns folder
+    ├── *.tidal                 # TidalCycles pattern files
+    └── _docs/                  # Reference documentation
+```
+
+**Important**: Keep pattern files at the root of `strudel/` - do NOT create subfolders for organizing patterns.
+
 ## File Format & Editor Setup
 
-- **`.strudel`** files are the default format for Strudel patterns in this workspace
+- **`.strudel`** files are the default format for Strudel patterns
 - Use the [Strudel VS](https://marketplace.visualstudio.com/items?itemName=cmillsdev.strudel) VS Code extension for:
   - Syntax highlighting
   - Pattern evaluation (Ctrl/Cmd+Enter to run)
   - Audio playback in the browser
   - Live coding workflow
-- Reference `@strudel` folder for comprehensive documentation, source code, and examples
+- Reference `strudel/strudel/` submodule for Strudel source code, docs, and examples
 
 ## Language Overview
 
@@ -441,7 +464,7 @@ silence               // Silent pattern (use to replace)
 
 ## Documentation Reference
 
-Always consult `@strudel` workspace folder for:
+Always consult `strudel/strudel/` submodule for:
 - Complete function documentation in `packages/core/`
 - Sample patterns in `website/src/repl/tunes.mjs`
 - Effects reference in `packages/superdough/`
