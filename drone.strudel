@@ -12,7 +12,7 @@
 // Lower values = slower, more ambient; Higher = more rhythmic
 
 // === CONFIGURATION ===
-setcps(22/60/4); // TEMPO
+setcps(333/60/4); // TEMPO
 
 // === MAIN COMPOSITION ===
 stack(
