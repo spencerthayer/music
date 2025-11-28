@@ -1,0 +1,457 @@
+# Strudel REPL Live Coding Rules
+
+You are an expert in Strudel, a JavaScript-based live coding environment for music, inspired by TidalCycles. Strudel patterns run in the browser and use the WebAudio API for sound synthesis and sample playback.
+
+## File Format & Editor Setup
+
+- **`.strudel`** files are the default format for Strudel patterns in this workspace
+- Use the [Strudel VS](https://marketplace.visualstudio.com/items?itemName=cmillsdev.strudel) VS Code extension for:
+  - Syntax highlighting
+  - Pattern evaluation (Ctrl/Cmd+Enter to run)
+  - Audio playback in the browser
+  - Live coding workflow
+- Reference `@strudel` folder for comprehensive documentation, source code, and examples
+
+## Language Overview
+
+Strudel is a JavaScript-embedded DSL for algorithmic pattern composition. Unlike TidalCycles (Haskell), Strudel uses JavaScript method chaining syntax.
+
+### Architecture
+- **Strudel** (JavaScript): Pattern language and composition
+- **Superdough** (WebAudio): Browser-based audio synthesis and sample playback
+- Patterns are evaluated and rendered to WebAudio in real-time
+
+## Core Syntax Differences from TidalCycles
+
+| TidalCycles (Haskell) | Strudel (JavaScript) |
+|-----------------------|---------------------|
+| `d1 $ s "bd sn"` | `s("bd sn")` |
+| `d1 $ s "bd sn" # gain 0.8` | `s("bd sn").gain(0.8)` |
+| `fast 2 $ s "bd sn"` | `s("bd sn").fast(2)` |
+| `every 4 (fast 2) $ s "bd"` | `s("bd").every(4, fast(2))` |
+| `note "c e g" # s "piano"` | `note("c e g").s("piano")` |
+
+## Pattern Declaration
+
+```javascript
+// Single pattern
+s("bd sd [~ bd] sd")
+
+// Named patterns with $: prefix (persistent patterns)
+$: s("bd*4")
+$: s("hh*8").gain(0.5)
+
+// Stack multiple layers
+stack(
+  s("bd*4"),
+  s("hh*8"),
+  note("c e g b").s("piano")
+)
+
+// Control tempo (cycles per second)
+setcps(0.5)  // 0.5 cycles per second = 120 BPM at 4/4
+setcps(22/60/4)  // Musical tempo calculation
+```
+
+## Mini-Notation (Pattern Strings)
+
+Mini-notation is written inside double quotes `"..."` or backticks `` `...` `` for multiline:
+
+| Symbol | Description | Example |
+|--------|-------------|---------|
+| `~` | Rest/silence | `"bd ~ sn ~"` |
+| `[ ]` | Group (subdivide time) | `"[bd sd] hh"` |
+| `.` | Grouping shorthand | `"bd sd . hh hh"` |
+| `,` | Polyrhythm/stack | `"[bd, hh hh hh]"` |
+| `*` | Repeat faster | `"bd*4"` |
+| `/` | Slow down | `"bd/2"` |
+| `<>` | Alternate each cycle | `"bd <sn cp hh>"` |
+| `!` | Replicate | `"bd!3"` |
+| `_` | Elongate (hold) | `"bd _ _ sn"` |
+| `@` | Elongate with weight | `"bd@3 sn"` |
+| `?` | Random drop (50%) | `"bd?"` |
+| `?0.8` | Random drop (80%) | `"bd?0.8"` |
+| `\|` | Random choice | `"[bd\|sn\|hh]"` |
+| `:` | Sample index | `"bd:3"` |
+| `( )` | Euclidean rhythm | `"bd(3,8)"` |
+| `{ }` | Polymetric sequence | `"{bd sd, cp cp cp}"` |
+
+### Euclidean Rhythms
+```javascript
+s("bd(3,8)")        // 3 hits over 8 steps (tresillo)
+s("bd(5,8)")        // Cuban cinquillo
+s("bd(3,8,2)")      // With rotation offset
+```
+
+### Note/Pitch Notation
+```javascript
+note("c4 e4 g4").s("piano")     // Note names with octave
+n("0 4 7").s("piano")           // Scale degrees/semitones
+note("c a f e")                 // Default synth (triangle)
+```
+
+## Sound Sources
+
+### Basic Waveforms
+```javascript
+s("sine")           // Sine wave
+s("sawtooth")       // Sawtooth wave
+s("square")         // Square wave
+s("triangle")       // Triangle wave (default for note())
+```
+
+### Noise Types
+```javascript
+s("white")          // White noise
+s("pink")           // Pink noise
+s("brown")          // Brown/red noise
+s("crackle")        // Crackle noise
+```
+
+### Samples
+```javascript
+s("bd sd hh cp")                        // Default samples
+s("bd:0 bd:1 bd:2")                     // Sample variations
+s("bd sd").bank("RolandTR909")          // Sample bank
+
+// Load external samples
+samples('github:tidalcycles/dirt-samples')
+samples({ 
+  name: 'path/to/sample.wav' 
+}, 'baseUrl')
+```
+
+## Pattern Methods
+
+### Time Manipulation
+```javascript
+.fast(2)              // Double speed
+.slow(2)              // Half speed
+.rev()                // Reverse pattern
+.early(0.25)          // Shift earlier by 1/4 cycle
+.late(0.25)           // Shift later by 1/4 cycle
+.off(0.125, add(7))   // Layer with offset and transformation
+```
+
+### Structure
+```javascript
+.struct("t ~ t t")    // Apply boolean structure
+.mask("t t ~ t")      // Mask with boolean pattern
+.euclid(3, 8)         // Euclidean rhythm
+.segment(8)           // Sample pattern 8 times per cycle
+.ply(2)               // Double each event
+```
+
+### Conditional
+```javascript
+.every(4, fast(2))              // Every 4th cycle
+.sometimes(x => x.fast(2))      // 50% chance
+.often(x => x.fast(2))          // 75% chance
+.rarely(x => x.fast(2))         // 25% chance
+.almostAlways(fn)               // 90% chance
+.almostNever(fn)                // 10% chance
+.someCycles(fn)                 // 50% of cycles
+.when(condition, fn)            // Conditional application
+```
+
+### Layering
+```javascript
+stack(pat1, pat2, pat3)         // Play simultaneously
+cat(pat1, pat2)                 // One per cycle
+fastcat(pat1, pat2)             // All in one cycle
+.superimpose(fn)                // Layer original + transformed
+.jux(fn)                        // Stereo split (L/R)
+.juxBy(0.5, fn)                 // Partial stereo split
+.layer(fn1, fn2, fn3)           // Apply multiple functions
+```
+
+## Controls & Effects
+
+### Amplitude
+```javascript
+.gain(0.8)            // Volume (exponential, default 1)
+.velocity(0.5)        // Velocity (multiplied with gain)
+.postgain(1.5)        // Post-effects gain
+```
+
+### Envelope (ADSR)
+```javascript
+.attack(0.01)         // Attack time in seconds
+.decay(0.1)           // Decay time
+.sustain(0.5)         // Sustain level (0-1)
+.release(0.5)         // Release time
+.adsr(".1:.1:.5:.2")  // Shorthand for all four
+```
+
+### Filters
+```javascript
+.lpf(1000)            // Low-pass filter frequency
+.lpq(2)               // Low-pass resonance
+.hpf(500)             // High-pass filter
+.hpq(0.5)             // High-pass resonance
+.bpf(1000)            // Band-pass filter
+.bpq(1)               // Band-pass resonance
+.vowel("a e i o u")   // Formant filter
+.djf(0.5)             // DJ filter (0-1, 0.5 = neutral)
+```
+
+### Filter Envelope
+```javascript
+.lpenv(4)             // Filter envelope depth
+.lpa(0.1)             // Filter attack
+.lpd(0.2)             // Filter decay
+.lps(0.3)             // Filter sustain
+.lpr(0.5)             // Filter release
+```
+
+### Spatial
+```javascript
+.pan(0.5)             // Stereo position (0=L, 0.5=C, 1=R)
+.room(0.5)            // Reverb amount
+.roomsize(4)          // Reverb size (alias: rsize, sz)
+.delay(0.5)           // Delay wet amount
+.delaytime(0.25)      // Delay time (alias: delayt, dt)
+.delayfeedback(0.5)   // Delay feedback (alias: delayfb, dfb)
+.orbit(1)             // Effect bus routing
+```
+
+### Distortion & Character
+```javascript
+.distort(2)           // Distortion amount
+.shape(0.5)           // Waveshaping (caution: loud!)
+.crush(8)             // Bit crusher (1=harsh, 16=subtle)
+.coarse(4)            // Sample rate reduction
+```
+
+### FM Synthesis
+```javascript
+.fm(4)                // FM modulation index
+.fmh(2)               // FM harmonicity ratio
+.fmattack(0.01)       // FM envelope attack
+.fmdecay(0.1)         // FM envelope decay
+.fmsustain(0.5)       // FM envelope sustain
+```
+
+### Pitch
+```javascript
+.speed(2)             // Playback speed (affects pitch)
+.detune(5)            // Detune in cents
+.vib(4)               // Vibrato rate
+.vibmod(0.5)          // Vibrato depth
+.penv(12)             // Pitch envelope (semitones)
+.pdecay(0.1)          // Pitch envelope decay
+```
+
+### Sample Manipulation
+```javascript
+.begin(0.25)          // Start point (0-1)
+.end(0.75)            // End point (0-1)
+.loop(1)              // Enable looping
+.loopBegin(0.25)      // Loop start
+.loopEnd(0.75)        // Loop end
+.clip(0.5)            // Duration multiplier
+.cut(1)               // Cut group (monophonic)
+```
+
+## Continuous Signals (Oscillators)
+
+Signals range 0-1 and need to be sampled or ranged:
+
+```javascript
+sine                  // Sine wave 0-1
+cosine                // Cosine wave 0-1
+saw                   // Sawtooth 0-1
+isaw                  // Inverted sawtooth
+tri                   // Triangle wave
+square                // Square wave 0-1
+rand                  // Random 0-1
+perlin                // Smooth Perlin noise
+
+// Usage examples
+s("bd*8").pan(sine)                      // Pan with sine
+s("bd*8").lpf(sine.range(200, 4000))     // Filter sweep
+s("bd*8").n(irand(8))                    // Random integers 0-7
+```
+
+### Signal Methods
+```javascript
+.range(200, 4000)     // Scale to range
+.slow(4)              // Slow down oscillator
+.fast(2)              // Speed up oscillator
+.segment(8)           // Sample 8 times per cycle
+```
+
+## Scales and Chords
+
+### Scales
+```javascript
+n("0 2 4 6").scale("C:minor")
+n("0 1 2 3 4 5 6 7").scale("D:dorian")
+
+// Available scales: major, minor, dorian, phrygian, lydian,
+// mixolydian, locrian, harmonicMinor, melodicMinor,
+// pentatonic, blues, chromatic, whole, diminished, etc.
+```
+
+### Chords
+```javascript
+note("c").chord("maj")          // C major
+note("c").chord("min7")         // C minor 7th
+chord("<Cm7 Fm7 G7 Cm7>").voicing()   // Chord progression with voicings
+```
+
+## Randomness
+
+```javascript
+rand                              // Continuous random 0-1
+irand(8)                          // Random integer 0-7
+choose("a", "b", "c")             // Random choice
+wchoose(["a", 3], ["b", 1])       // Weighted choice
+chooseCycles("a", "b", "c")       // One choice per cycle
+shuffle(4)                        // Shuffle pattern into 4 parts
+scramble(4)                       // Random rearrange
+degradeBy(0.5)                    // Remove 50% of events
+```
+
+## Pattern Combinators
+
+### Value Modification
+```javascript
+.add(7)               // Add to note values
+.sub(12)              // Subtract from values
+.mul(2)               // Multiply values
+.div(2)               // Divide values
+.set({ s: "bd" })     // Set control values
+```
+
+### Pattern Application
+```javascript
+.fmap(x => x + 1)     // Transform each value
+.when(cond, fn)       // Conditional transform
+.layer(fn1, fn2)      // Apply multiple transforms
+.apply(fn)            // Apply function to pattern
+```
+
+## Composition Patterns
+
+### Building Layers
+```javascript
+stack(
+  // Drums
+  s("bd*4"),
+  s("~ cp ~ cp"),
+  s("hh*8").gain(0.6),
+  
+  // Bass
+  note("<c2 f2 g2 c2>").s("sawtooth")
+    .lpf(400).release(0.2),
+  
+  // Melody
+  n("0 3 5 7").scale("C:minor")
+    .s("piano").gain(0.7)
+)
+```
+
+### Progressive Development
+```javascript
+// Start simple
+$: s("bd*4")
+
+// Add elements
+$: s("bd*4, hh*8")
+
+// Add variation
+$: s("bd*4, hh*8").every(4, fast(2))
+
+// Add effects
+$: s("bd*4, hh*8")
+  .every(4, fast(2))
+  .room(0.3)
+  .delay(0.25)
+```
+
+## Best Practices
+
+### Code Style
+1. Use `$:` prefix for persistent patterns in live coding
+2. Use `stack()` to organize multiple layers
+3. Add comments with `//` to document sections
+4. Use meaningful variable names for reusable patterns
+5. Build complexity incrementally
+
+### Performance Tips
+1. Use `hush()` to stop all patterns
+2. Use `setcps()` to control global tempo
+3. Separate patterns by `orbit` for independent effects
+4. Use `.segment()` to sample continuous patterns
+5. Use `.clip()` to prevent overlapping sounds
+
+### Common Patterns
+```javascript
+// Four-on-the-floor
+s("bd*4")
+
+// Basic beat
+s("bd ~ [~ bd] ~, ~ cp ~ cp, hh*8")
+
+// Euclidean groove
+s("[bd(3,8), hh(5,8), cp(2,8)]")
+
+// Melodic sequence
+n("0 3 5 7").scale("C:minor").s("piano")
+  .lpf(slow(4, range(500, 4000, saw)))
+
+// Ambient drone
+note("[0,4,7,11]").scale("A:minor")
+  .s("sine").fm(2).fmh(0.5)
+  .attack(2).release(4)
+  .room(0.8).rsize(8)
+```
+
+## Stopping and Control
+
+```javascript
+hush()                // Stop all patterns
+silence               // Silent pattern (use to replace)
+```
+
+## Visualization
+
+```javascript
+._scope()             // Oscilloscope view
+._pianoroll()         // Piano roll visualization
+.color("red")         // Set visualization color
+```
+
+## External Integration
+
+### MIDI
+```javascript
+.midi()               // Send to default MIDI output
+.midichan(1)          // MIDI channel (0-15)
+.midiport("name")     // MIDI port selection
+```
+
+### OSC (requires bridge)
+```javascript
+.osc()                // Send via OSC
+.oschost("localhost") // OSC host
+.oscport(57120)       // OSC port
+```
+
+## Documentation Reference
+
+Always consult `@strudel` workspace folder for:
+- Complete function documentation in `packages/core/`
+- Sample patterns in `website/src/repl/tunes.mjs`
+- Effects reference in `packages/superdough/`
+- Mini-notation parser in `packages/mini/`
+- Scales and chords in `packages/tonal/`
+
+## Error Prevention
+
+1. **String quotes**: Use `"double quotes"` or backticks for mini-notation, `'single quotes'` for plain strings
+2. **Method chaining**: Each method returns a pattern, chain with `.`
+3. **Function arguments**: Wrap transformations in arrow functions for `every`, `sometimes`, etc.
+4. **Sample loading**: Ensure samples are loaded before use with `samples()`
+5. **Tempo**: Remember `setcps()` sets cycles per second, not BPM
