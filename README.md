@@ -127,3 +127,52 @@ open /Applications/SuperCollider.app
 # 2. Cmd+Shift+P → "TidalCycles: Start Tidal"  
 # 3. Evaluate: startFull (Cmd+Enter)
 ```
+
+---
+
+## 🎛️ Supriya Music CLI
+
+The `supriya_music` package provides a command-line interface for exploring SuperCollider synthesis through Python's Supriya library.
+
+### Available Commands
+
+```bash
+# Display the main toolkit information
+python -m supriya_music
+
+# Get help for specific commands
+python -m supriya_music hello --help
+
+# Run the hello example with explanation (default)
+python -m supriya_music hello
+
+# Run the hello example without explanation
+python -m supriya_music hello --no-explain
+
+# Launch the TUI interface
+python -m supriya_music tui
+```
+
+### VS Code Debug Configuration
+
+The project includes a custom VS Code launch configuration that runs Python files as modules:
+
+**Configuration**: "Python Debugger: Current File as Module"
+
+- **Purpose**: Runs files using `python -m module_name` instead of `python file.py`
+- **Benefits**: Proper module resolution and import handling
+- **Usage**: Set breakpoints in any Python file and press `F5` to debug
+
+### Example Workflow
+
+1. **Open** any Python file in the `supriya_music/` directory
+2. **Set breakpoints** where needed
+3. **Press F5** to launch the debugger
+4. The file will run as a module with proper import resolution
+
+### CLI Features
+
+- **Rich formatting**: Beautiful terminal output with syntax highlighting
+- **Interactive explanations**: Step-by-step breakdowns of synthesis concepts
+- **Modular design**: Easy to extend with new examples and commands
+- **Educational focus**: Designed for learning Supriya and SuperCollider concepts

@@ -91,7 +91,7 @@ def hello(explain: bool = False):
     # Use configuration options if available
     if CONFIG.get("audio"):
         console.print(f"Booting server with audio configuration from {CONFIG_PATH}.")
-        console.print(f"Attempting Configuration:", CONFIG["audio"])
+        console.print("Attempting Configuration:", CONFIG["audio"])
 
         options = supriya.Options(**CONFIG["audio"])
         try:
@@ -103,7 +103,8 @@ def hello(explain: bool = False):
                 f"[bold red]Failed to boot server with provided options, doublecheck your configuration in {CONFIG_PATH}.[/bold red]"
             )
             console.print(
-                "[bold red]For more information try running 'supriya_music info devices' (`python -m supriya_music info devices`) to list available audio devices.[/bold red]"
+                "[bold red]For more information try running 'supriya_music info devices' (`python -m supriya_music info devices`) to "
+                "list available audio devices.[/bold red]"
             )
             sys.exit(1)
     else:
