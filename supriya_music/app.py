@@ -4,6 +4,8 @@ from rich.console import Console
 from rich.markdown import Markdown
 from rich.panel import Panel
 
+from trogon.typer import init_tui
+
 from .hello import hello
 from .info import info_app
 
@@ -12,7 +14,9 @@ app = typer.Typer(
     help="Supriya music toolkit command line interface.",
     no_args_is_help=False,
 )
-app.add_typer(info_app, name="info", help="Display information about Supriya Music Toolkit.")
+app.add_typer(
+    info_app, name="info", help="Display information about Supriya Music Toolkit."
+)
 
 console = Console()
 
@@ -48,6 +52,9 @@ def main(ctx: typer.Context):
                     border_style="bright_blue",
                 )
             )
+
+
+init_tui(app)
 
 
 if __name__ == "__main__":
