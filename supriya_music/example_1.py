@@ -298,8 +298,13 @@ server.add_synthdefs(sine_synth)"""
                 self,
                 "Supriya Error",
                 f"Failed to connect to SuperCollider server:\n\n{str(e)}\n\n"
-                "Make sure SuperCollider is installed and try again.",
+                "Make sure SuperCollider is installed and try again.\n\n"
+                "Application will now exit.",
             )
+
+            # Exit the application since server boot failed
+            QApplication.quit()
+            sys.exit(1)
 
     def on_frequency_changed(self, value):
         """Handle frequency slider changes"""

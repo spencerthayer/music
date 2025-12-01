@@ -9,6 +9,7 @@ from trogon.typer import init_tui
 from .hello import hello
 from .info import info_app
 from .example_1 import main as example1_main
+from .example_2 import main as example2_main
 
 app = typer.Typer(
     name="supriya music",
@@ -30,6 +31,28 @@ def example_1():
     try:
         # Import here to avoid PyQt6 dependency when not using GUI
         exit_code = example1_main()
+        if exit_code != 0:
+            console.print(
+                f"[red]GUI application exited with error code: {exit_code}[/red]"
+            )
+            raise typer.Exit(exit_code)
+    except ImportError as e:
+        console.print(f"[red]Failed to import GUI dependencies: {e}[/red]")
+        console.print(
+            "[yellow]Make sure PyQt6 is installed: pip install PyQt6[/yellow]"
+        )
+        raise typer.Exit(1)
+    except Exception as e:
+        console.print(f"[red]Failed to launch GUI: {e}[/red]")
+        raise typer.Exit(1)
+
+
+@app.command()
+def example_2():
+    """Launch the PyQt6 GUI for noise-modulated synth control."""
+    try:
+        # Import here to avoid PyQt6 dependency when not using GUI
+        exit_code = example2_main()
         if exit_code != 0:
             console.print(
                 f"[red]GUI application exited with error code: {exit_code}[/red]"
