@@ -5,3 +5,6 @@ sounddevice
 pandas
 PyYAML
 trogon
+librosa
+matplotlib
+PyQt6
