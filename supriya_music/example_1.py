@@ -22,6 +22,9 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import QTimer, pyqtSignal, Qt
 from PyQt6.QtGui import QFont
 from rich import print as rprint
+from rich.console import Console
+from rich.panel import Panel
+from rich.syntax import Syntax
 
 
 class SupriyaController(QMainWindow):
@@ -32,6 +35,7 @@ class SupriyaController(QMainWindow):
         self.server = None
         self.synth = None
         self.sine_synthdef = None
+        self.console = Console()
 
         # Current synth parameters
         self.current_frequency = 440
@@ -213,14 +217,60 @@ class SupriyaController(QMainWindow):
         # Spacer
         main_layout.addStretch()
 
+    def show_code_panel(self, title, code, description=None):
+        """Display a panel with relevant Supriya code"""
+        # Display description if provided
+        if description:
+            self.console.print(f"[dim]{description}[/dim]")
+
+        # Display syntax-highlighted code in a panel
+        syntax = Syntax(code, "python", theme="monokai", line_numbers=True)
+        self.console.print(
+            Panel(
+                syntax, title=f"📝 {title}", border_style="bright_cyan", padding=(1, 2)
+            )
+        )
+        self.console.print()  # Add spacing
+
     def setup_supriya(self):
         """Initialize Supriya server and SynthDef"""
         try:
             rprint("[bold blue]🎵 Initializing Supriya server...[/bold blue]")
 
+            # Show server setup code
+            server_code = """# Create and boot SuperCollider server
+server = supriya.Server()
+server.boot()"""
+            self.show_code_panel(
+                "Server Setup",
+                server_code,
+                "Creating and booting the SuperCollider audio server:",
+            )
+
             # Create and boot server
             self.server = supriya.Server()
             self.server.boot()
+
+            # Show SynthDef creation code
+            synthdef_code = """# Define sine wave SynthDef using decorator syntax
+@supriya.synthdef()
+def sine_synth(amplitude=0.1, frequency=440):
+    # Generate sine wave oscillator
+    sine = supriya.ugens.SinOsc.ar(frequency=frequency)
+    
+    # Apply amplitude scaling
+    scaled_sine = sine * amplitude
+    
+    # Output to stereo speakers (bus 0)
+    supriya.ugens.Out.ar(bus=0, source=scaled_sine)
+
+# Add SynthDef to server
+server.add_synthdefs(sine_synth)"""
+            self.show_code_panel(
+                "SynthDef Creation",
+                synthdef_code,
+                "Defining a sine wave synthesizer with frequency and amplitude control:",
+            )
 
             # Define the sine wave SynthDef (using new decorator syntax from tutorial)
             @supriya.synthdef()
@@ -259,6 +309,21 @@ class SupriyaController(QMainWindow):
         # Update synth in real-time if it's running
         if self.synth is not None:
             try:
+                # Show real-time parameter update code (only on significant changes)
+                if (
+                    value % 50 == 0 or value == 110 or value == 1760
+                ):  # Show occasionally
+                    update_code = f"""# Real-time parameter control
+synth.set(frequency={value})  # Update frequency while playing
+
+# This immediately changes the pitch without stopping the synth
+# Very useful for live performance and interaction"""
+                    self.show_code_panel(
+                        "Real-time Control",
+                        update_code,
+                        "Updating synth parameters while playing:",
+                    )
+
                 self.synth.set(frequency=value)
                 self.update_synth_info()
                 rprint(f"[cyan]🎵 Frequency updated to {value} Hz[/cyan]")
@@ -275,6 +340,19 @@ class SupriyaController(QMainWindow):
         # Update synth in real-time if it's running
         if self.synth is not None:
             try:
+                # Show amplitude control code occasionally
+                if value % 10 == 0:  # Show every 10th value
+                    amp_code = f"""# Volume control in real-time
+synth.set(amplitude={amplitude:.2f})  # Set volume (0.0 = silent, 1.0 = full)
+
+# Amplitude changes are immediate and smooth
+# Perfect for creating fade-ins, fade-outs, and dynamic expression"""
+                    self.show_code_panel(
+                        "Volume Control",
+                        amp_code,
+                        "Real-time amplitude/volume adjustment:",
+                    )
+
                 self.synth.set(amplitude=amplitude)
                 self.update_synth_info()
                 rprint(f"[magenta]🔊 Amplitude updated to {amplitude:.2f}[/magenta]")
@@ -302,6 +380,21 @@ class SupriyaController(QMainWindow):
 
             rprint(
                 f"[bold cyan]🎵 Starting synth at {self.current_frequency} Hz, amplitude {self.current_amplitude:.2f}...[/bold cyan]"
+            )
+
+            # Show synth creation code
+            create_code = f"""# Create and start a synth instance
+synth = server.add_synth(
+    sine_synth,  # The SynthDef we created
+    frequency={self.current_frequency},  # Hz
+    amplitude={self.current_amplitude:.2f}   # Volume (0.0-1.0)
+)
+
+# The synth is now playing and can be controlled in real-time"""
+            self.show_code_panel(
+                "Synth Creation",
+                create_code,
+                "Creating a synth instance with specific parameters:",
             )
 
             # Create synth with current slider parameters
@@ -336,6 +429,21 @@ class SupriyaController(QMainWindow):
                 return
 
             rprint("[bold yellow]🔇 Freeing synth...[/bold yellow]")
+
+            # Show synth cleanup code
+            cleanup_code = """# Stop and remove synth from server
+synth.free()  # Immediately stops the synth and frees resources
+
+# The synth object becomes invalid after .free()
+# Always set to None to avoid accidental reuse
+synth = None
+
+# Server resources are now available for new synths"""
+            self.show_code_panel(
+                "Synth Cleanup",
+                cleanup_code,
+                "Properly stopping and cleaning up synth resources:",
+            )
 
             # Free the synth
             self.synth.free()
